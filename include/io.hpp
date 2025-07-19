@@ -15,10 +15,11 @@ private:
     static constexpr uint16_t TMA_ADDRESS = 0xFF06;
     static constexpr uint16_t TAC_ADDRESS = 0xFF07;
 
-    std::array<uint8_t, IO_SIZE> io{};
-
-    int divCounter = 0;
-    int timaCounter = 0;
+    std::array<uint8_t, 0x80> io{};
+    int divCounter{0};
+    int timaCounter{0};
+    uint8_t directionButtons{0xFF}; // All unpressed
+    uint8_t actionButtons{0xFF};    // All unpressed
 
 public:
     IO() : divCounter(0), timaCounter(0) {}
