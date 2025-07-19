@@ -63,8 +63,8 @@ private:
 
     static constexpr uint8_t TILE_BYTE_SIZE = 16;
     static constexpr uint8_t TILE_PIXEL_SIZE = 8;
-    static constexpr uint8_t NUM_TILES_PER_COLUMN = SCREEN_WIDTH / TILE_PIXEL_SIZE;
-    static constexpr uint8_t NUM_TILES_PER_ROW = SCREEN_HEIGHT / TILE_PIXEL_SIZE;
+    static constexpr uint8_t NUM_TILES_PER_COLUMN = 32;
+    static constexpr uint8_t NUM_TILES_PER_ROW = 32;
 
     std::array<uint8_t, SCREEN_SIZE * 4> frameBuffer{};
     MMU& bus;

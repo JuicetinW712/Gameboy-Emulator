@@ -18,5 +18,7 @@ make
 To run the emulator, you need to provide a Gameboy ROM file.
 
 ```bash
-./gameboy <rom_file>
+./gameboy <rom_file> [--test]
 ```
+
+The `--test` flag will print cartridge information to the console.

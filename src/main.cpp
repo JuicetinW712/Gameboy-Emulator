@@ -37,18 +37,30 @@ vector<char> readFile(string fileName)
 // TODO - move main loop into chip8 class
 int main(int argc, char* argv[])
 {
-    if (argc != 2)
-    {
-        cout << "Invalid Input. Should be ./gameboy {filename}\n";
+    bool isTestMode = false;
+    std::string fileName;
+
+    if (argc < 2 || argc > 3) {
+        std::cout << "Invalid Input. Usage: ./gameboy {filename} [--test]\n";
         return 0;
     }
 
-    string fileName = argv[1];
-    vector<char> buffer = readFile(fileName);
-    vector<uint8_t> uintBuffer(buffer.begin(), buffer.end());
+    fileName = argv[1];
+
+    if (argc == 3 && std::string(argv[2]) == "--test") {
+        isTestMode = true;
+    } else if (argc == 3) {
+        std::cout << "Invalid flag. Usage: ./gameboy {filename} [--test]\n";
+        return 0;
+    }
+
+    std::vector<char> buffer = readFile(fileName);
+    std::vector<uint8_t> uintBuffer(buffer.begin(), buffer.end());
 
     Cartridge cartridge(std::move(uintBuffer), fileName);
-    cartridge.printInfo();
+    if (isTestMode) {
+        cartridge.printInfo();
+    }
 
     Gameboy emu(cartridge);
     emu.run();
