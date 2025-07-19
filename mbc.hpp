@@ -1,5 +1,5 @@
 #pragma once
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 
 using namespace std;
@@ -11,7 +11,7 @@ public:
     virtual ~MBC() = default;
 
     virtual void write(uint16_t address, uint8_t value) = 0;
-    virtual uint8_t read(uint16_t address) const = 0;
+    [[nodiscard]] virtual uint8_t read(uint16_t address) const = 0;
 };
 
 class MBC1: public MBC {
@@ -61,13 +61,13 @@ public:
     MBC1(MBC1&&) = delete;
 
     MBC1(vector<uint8_t>& romData, vector<uint8_t>& ramData):
-        numRomBanks(static_cast<uint8_t>(romData.size() / ROM_BANK_SIZE)),
-        numRamBanks(static_cast<uint8_t>(ramData.size() / RAM_BANK_SIZE)),
         rom(romData),
-        ram(ramData) {
+        ram(ramData),
+        numRomBanks(static_cast<uint8_t>(romData.size() / ROM_BANK_SIZE)),
+        numRamBanks(static_cast<uint8_t>(ramData.size() / RAM_BANK_SIZE)) {
     }
 
-    virtual void write(uint16_t address, uint8_t value) override 
+    void write(uint16_t address, uint8_t value) override
     {
         if (inRange(address, RAM_ENABLE_START, RAM_ENABLE_END)) 
         {
@@ -106,7 +106,7 @@ public:
         }
     }
 
-    virtual uint8_t read(uint16_t address) const override 
+    [[nodiscard]] uint8_t read(uint16_t address) const override
     {
         if (inRange(address, ROM_BANK_0_START, ROM_BANK_0_END)) 
         {

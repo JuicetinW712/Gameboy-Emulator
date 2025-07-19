@@ -1,5 +1,4 @@
 #pragma once
-#include <functional>
 #include <iomanip>
 
 #include "mmu.hpp"
@@ -172,7 +171,7 @@ private:
     void RES(uint8_t n, R8 reg);
     void SET(uint8_t n, R8 reg);
 public:
-    CPU(MMU& bus): bus(bus) {}
+    explicit CPU(MMU& bus): bus(bus) {}
     void run() {
         while (true) {
             cycle();

@@ -14,4 +14,5 @@ add_executable(gameboy
         cpu.cpp
         gameboy.hpp
         cartridge.hpp
-        io.hpp)
+        io.hpp
+        ppu.hpp)
