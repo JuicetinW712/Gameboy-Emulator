@@ -5,8 +5,8 @@
 
 #include "mmu.hpp"
 
-static constexpr uint16_t SCREEN_WIDTH = 144;
-static constexpr uint16_t SCREEN_HEIGHT = 160;
+static constexpr uint16_t SCREEN_WIDTH = 160;
+static constexpr uint16_t SCREEN_HEIGHT = 144;
 
 
 class Display {
