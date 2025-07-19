@@ -61,9 +61,7 @@ void MMU::write(uint16_t address, uint8_t value) {
             oam.at(address - MemoryMap::OAM_START) = value;
             break;
         case MemoryRegion::IO:
-            if (value != 0x81) {
-                std::cout << static_cast<char>(value);
-            }
+            
             io.write(address, value);
             // std::cout << "Attempted write to IO address: 0x" << std::hex << address << " with value: 0x" << std::hex << (int)value << std::endl;
             // TODO Implement actual IO register writes here
