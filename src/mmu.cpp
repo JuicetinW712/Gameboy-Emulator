@@ -33,6 +33,8 @@ uint8_t MMU::read(uint16_t address) {
             return hram.at(address - MemoryMap::HRAM_START);
         case MemoryRegion::INTERRUPT_REGISTER:
             return interruptRegister;
+        case MemoryRegion::UNUSABLE:
+            return 0xFF; // Reads from unusable memory return 0xFF
         case MemoryRegion::UNKNOWN:
             std::cerr << "Attempted read from unknown address: 0x" << std::hex << address << std::endl;
             throw std::out_of_range("Attempted read from unknown memory region");
@@ -72,8 +74,19 @@ void MMU::write(uint16_t address, uint8_t value) {
         case MemoryRegion::INTERRUPT_REGISTER:
             interruptRegister = value;
             break;
+        case MemoryRegion::UNUSABLE:
+            // Writes to unusable memory are ignored
+            break;
         case MemoryRegion::UNKNOWN:
             std::cerr << "Attempted write to unknown address: 0x" << std::hex << address << " with value: 0x" << std::hex << (int)value << std::endl;
             throw std::out_of_range("Attempted write to unknown memory region");
     }
+}
+
+void MMU::handleKeyDown(uint8_t key) {
+    io.handleKeyDown(key);
+}
+
+void MMU::handleKeyUp(uint8_t key) {
+    io.handleKeyUp(key);
 }

@@ -252,6 +252,11 @@ uint8_t CPU::popStack() {
 int CPU::cycle() {
     handleInterrupts();
 
+    if (enableInterruptsNextInstruction) {
+        interruptsEnabled = true;
+        enableInterruptsNextInstruction = false;
+    }
+
     if (!halted) {
         uint8_t opcode = bus.read(PC++);
         // cout << "Executing opcode " << std::hex << static_cast<int>(opcode) << endl;
@@ -962,7 +967,7 @@ void CPU::DI() {
     interruptsEnabled = false;
 }
 void CPU::EI() {
-    interruptsEnabled = true;
+    enableInterruptsNextInstruction = true;
 }
 
 void CPU::RLC(R8 reg) {

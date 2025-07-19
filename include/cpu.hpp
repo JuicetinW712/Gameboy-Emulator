@@ -35,6 +35,7 @@ private:
     MMU& bus;
     bool halted{false};
     bool interruptsEnabled{true};
+    bool enableInterruptsNextInstruction{false};
 
     // Getters & Setters
 

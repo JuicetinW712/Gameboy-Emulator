@@ -1,10 +1,16 @@
 #pragma once
+#include <cassert>
 #include <cstdint>
 #include <vector>
+#include <string>
+#include <memory>
 
 using namespace std;
 
-#define MAX(a, b) (((a) >= (b)) ? (a) : (b))
+template <typename T>
+constexpr const T& MAX(const T& a, const T& b) {
+    return (a > b) ? a : b;
+}
 
 class MBC {
 public:
@@ -14,8 +20,24 @@ public:
     [[nodiscard]] virtual uint8_t read(uint16_t address) const = 0;
 };
 
+class ROMOnly: public MBC {
+protected:
+    vector<uint8_t>& rom;
+
+public:
+    ROMOnly(vector<uint8_t>& romData) : rom(romData) {}
+
+    void write(uint16_t address, uint8_t value) override {
+        // ROM Only cartridges do not have MBC, so writes to ROM are ignored.
+    }
+
+    [[nodiscard]] uint8_t read(uint16_t address) const override {
+        return rom.at(address);
+    }
+};
+
 class MBC1: public MBC {
-private:
+protected:
     // Bank sizes
     static constexpr uint16_t ROM_BANK_SIZE = 0x4000;
     static constexpr uint16_t RAM_BANK_SIZE = 0x2000;
@@ -59,6 +81,7 @@ public:
     MBC1(const MBC1&) = delete;
     MBC1& operator=(const MBC1&) = delete;
     MBC1(MBC1&&) = delete;
+    virtual ~MBC1() = default;
 
     MBC1(vector<uint8_t>& romData, vector<uint8_t>& ramData):
         rom(romData),
@@ -129,4 +152,97 @@ public:
             return 0xFF;
         }
     }
+};
+
+class MBC1Battery: public MBC1 {
+private:
+    string filename;
+
+public:
+    MBC1Battery(vector<uint8_t>& romData, vector<uint8_t>& ramData, string filename);
+    ~MBC1Battery() override;
+};
+
+class MBC2: public MBC {
+protected:
+    // Bank sizes
+    static constexpr uint16_t ROM_BANK_SIZE = 0x4000;
+    static constexpr uint16_t RAM_SIZE = 0x200;
+
+    // Addresses that modify the MBC state
+    static constexpr uint16_t RAM_ENABLE_START = 0x0000;
+    static constexpr uint16_t RAM_ENABLE_END = 0x1FFF;
+    static constexpr uint16_t ROM_BANK_SELECT_START = 0x2000;
+    static constexpr uint16_t ROM_BANK_SELECT_END = 0x3FFF;
+
+    // ROM and RAM addresses
+    static constexpr uint16_t ROM_BANK_0_START = 0x0000;
+    static constexpr uint16_t ROM_BANK_0_END = 0x3FFF;
+    static constexpr uint16_t ROM_BANK_N_START = 0x4000;
+    static constexpr uint16_t ROM_BANK_N_END = 0x7FFF;
+    static constexpr uint16_t RAM_BANK_START = 0xA000;
+    static constexpr uint16_t RAM_BANK_END = 0xA1FF;
+
+    // Cartridge data
+    vector<uint8_t>& rom;
+    vector<uint8_t>& ram;
+    const uint8_t numRomBanks;
+
+    // Mode and bank state
+    bool ramEnabled{false};
+    uint8_t romBankNumber{1};
+
+    static constexpr bool inRange(uint16_t address, uint16_t start, uint16_t end) {
+        return address >= start && address <= end;
+    }
+
+public:
+    MBC2() = delete;
+    MBC2(const MBC2&) = delete;
+    MBC2& operator=(const MBC2&) = delete;
+    MBC2(MBC2&&) = delete;
+    virtual ~MBC2() = default;
+
+    MBC2(vector<uint8_t>& romData, vector<uint8_t>& ramData) :
+        rom(romData),
+        ram(ramData),
+        numRomBanks(static_cast<uint8_t>(romData.size() / ROM_BANK_SIZE)) {
+    }
+
+    void write(uint16_t address, uint8_t value) override {
+        if (inRange(address, RAM_ENABLE_START, RAM_ENABLE_END)) {
+            if (!((address >> 8) & 0x1)) { // Check if bit 8 is 0
+                ramEnabled = ((value & 0xF) == 0xA);
+            }
+        } else if (inRange(address, ROM_BANK_SELECT_START, ROM_BANK_SELECT_END)) {
+            if (((address >> 8) & 0x1)) { // Check if bit 8 is 1
+                romBankNumber = MAX(value & 0xF, 1);
+            }
+        } else if (ramEnabled && inRange(address, RAM_BANK_START, RAM_BANK_END)) {
+            ram.at(address - RAM_BANK_START) = value & 0xF; // MBC2 RAM is 4 bits wide
+        } else {
+            assert(false && "MBC2 should not be handling address for writes");
+        }
+    }
+
+    [[nodiscard]] uint8_t read(uint16_t address) const override {
+        if (inRange(address, ROM_BANK_0_START, ROM_BANK_0_END)) {
+            return rom.at(address);
+        } else if (inRange(address, ROM_BANK_N_START, ROM_BANK_N_END)) {
+            return rom.at(address + (ROM_BANK_SIZE * (romBankNumber - 1)));
+        } else if (ramEnabled && inRange(address, RAM_BANK_START, RAM_BANK_END)) {
+            return ram.at(address - RAM_BANK_START) | 0xF0; // Upper 4 bits are always 1
+        } else {
+            return 0xFF;
+        }
+    }
+};
+
+class MBC2Battery: public MBC2 {
+private:
+    string filename;
+
+public:
+    MBC2Battery(vector<uint8_t>& romData, vector<uint8_t>& ramData, string filename);
+    ~MBC2Battery() override;
 };

@@ -16,6 +16,7 @@ enum class MemoryRegion : uint8_t {
     IO,
     HRAM,
     INTERRUPT_REGISTER,
+    UNUSABLE, // For addresses that are explicitly unusable
     UNKNOWN // For addresses that don't fall into defined regions
 };
 
@@ -32,6 +33,8 @@ namespace MemoryMap {
     constexpr uint16_t WRAM_END           = 0xDFFF;
     constexpr uint16_t OAM_START          = 0xFE00;
     constexpr uint16_t OAM_END            = 0xFE9F;
+    constexpr uint16_t UNUSABLE_START     = 0xFEA0;
+    constexpr uint16_t UNUSABLE_END       = 0xFEFF;
     constexpr uint16_t IO_START           = 0xFF00;
     constexpr uint16_t IO_END             = 0xFF7F;
     constexpr uint16_t HRAM_START         = 0xFF80;
@@ -67,6 +70,8 @@ private:
             return MemoryRegion::WRAM;
         } else if (inRange(address, MemoryMap::OAM_START, MemoryMap::OAM_END)) {
             return MemoryRegion::OAM;
+        } else if (inRange(address, MemoryMap::UNUSABLE_START, MemoryMap::UNUSABLE_END)) {
+            return MemoryRegion::UNUSABLE;
         } else if (inRange(address, MemoryMap::IO_START, MemoryMap::IO_END)) {
             return MemoryRegion::IO;
         } else if (inRange(address, MemoryMap::HRAM_START, MemoryMap::HRAM_END)) {
@@ -89,4 +94,7 @@ public:
     uint8_t read(uint16_t address);
 
     void write(uint16_t address, uint8_t value);
+
+    void handleKeyDown(uint8_t key);
+    void handleKeyUp(uint8_t key);
 };

@@ -29,5 +29,8 @@ public:
 
     void tick(int cycles);
     void requestInterrupt(uint8_t interrupt);
+
+    void handleKeyDown(uint8_t key);
+    void handleKeyUp(uint8_t key);
 };
 

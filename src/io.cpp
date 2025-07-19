@@ -52,3 +52,98 @@ void IO::tick(int cycles) {
 void IO::requestInterrupt(uint8_t interrupt) {
     io.at(0xFF0F - IO::IO_START) |= interrupt;
 }
+
+void IO::handleKeyDown(uint8_t key) {
+    uint8_t joypad_state = io.at(0xFF00 - IO::IO_START);
+    switch (key) {
+        case 0: // Right
+            if (!((joypad_state >> 4) & 1)) { // If direction keys are selected
+                joypad_state &= ~(1 << 0);
+            }
+            break;
+        case 1: // Left
+            if (!((joypad_state >> 4) & 1)) {
+                joypad_state &= ~(1 << 1);
+            }
+            break;
+        case 2: // Up
+            if (!((joypad_state >> 4) & 1)) {
+                joypad_state &= ~(1 << 2);
+            }
+            break;
+        case 3: // Down
+            if (!((joypad_state >> 4) & 1)) {
+                joypad_state &= ~(1 << 3);
+            }
+            break;
+        case 4: // A
+            if (!((joypad_state >> 5) & 1)) { // If action keys are selected
+                joypad_state &= ~(1 << 0);
+            }
+            break;
+        case 5: // B
+            if (!((joypad_state >> 5) & 1)) {
+                joypad_state &= ~(1 << 1);
+            }
+            break;
+        case 6: // Select
+            if (!((joypad_state >> 5) & 1)) {
+                joypad_state &= ~(1 << 2);
+            }
+            break;
+        case 7: // Start
+            if (!((joypad_state >> 5) & 1)) {
+                joypad_state &= ~(1 << 3);
+            }
+            break;
+    }
+    io.at(0xFF00 - IO::IO_START) = joypad_state;
+    requestInterrupt(0x10); // Request joypad interrupt
+}
+
+void IO::handleKeyUp(uint8_t key) {
+    uint8_t joypad_state = io.at(0xFF00 - IO::IO_START);
+    switch (key) {
+        case 0: // Right
+            if (!((joypad_state >> 4) & 1)) {
+                joypad_state |= (1 << 0);
+            }
+            break;
+        case 1: // Left
+            if (!((joypad_state >> 4) & 1)) {
+                joypad_state |= (1 << 1);
+            }
+            break;
+        case 2: // Up
+            if (!((joypad_state >> 4) & 1)) {
+                joypad_state |= (1 << 2);
+            }
+            break;
+        case 3: // Down
+            if (!((joypad_state >> 4) & 1)) {
+                joypad_state |= (1 << 3);
+            }
+            break;
+        case 4: // A
+            if (!((joypad_state >> 5) & 1)) {
+                joypad_state |= (1 << 0);
+            }
+            break;
+        case 5: // B
+            if (!((joypad_state >> 5) & 1)) {
+                joypad_state |= (1 << 1);
+            }
+            break;
+        case 6: // Select
+            if (!((joypad_state >> 5) & 1)) {
+                joypad_state |= (1 << 2);
+            }
+            break;
+        case 7: // Start
+            if (!((joypad_state >> 5) & 1)) {
+                joypad_state |= (1 << 3);
+            }
+            break;
+    }
+    io.at(0xFF00 - IO::IO_START) = joypad_state;
+}

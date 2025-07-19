@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     vector<char> buffer = readFile(fileName);
     vector<uint8_t> uintBuffer(buffer.begin(), buffer.end());
 
-    Cartridge cartridge(std::move(uintBuffer));
+    Cartridge cartridge(std::move(uintBuffer), fileName);
     cartridge.printInfo();
 
     Gameboy emu(cartridge);
