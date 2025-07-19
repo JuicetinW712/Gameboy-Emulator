@@ -27,21 +27,133 @@ PPU::PPU(MMU& bus) : bus(bus), display(Display()) {}
 
 void PPU::tick(int cycles) {
     m_dots += cycles;
-    if (m_dots < DOTS_PER_SCANLINE) {
+
+    uint8_t currentScanline = bus.read(LY_ADDRESS);
+    uint8_t lcdc = bus.read(LCDC_ADDRESS);
+    bool lcdEnabled = (lcdc >> 7) & 1;
+
+    if (!lcdEnabled) {
+        // If LCD is disabled, reset scanline and mode
+        bus.write(LY_ADDRESS, 0);
+        m_dots = 0;
+        currentMode = PPU_MODE::HBLANK;
         return;
     }
 
-    m_dots -= DOTS_PER_SCANLINE;
-    uint8_t currentScanline = bus.read(LY_ADDRESS);
-    currentScanline++;
-    bus.write(LY_ADDRESS, currentScanline);
+    PPU_MODE newMode = currentMode;
 
-    if (currentScanline == 144) {
+    switch (currentMode) {
+        case PPU_MODE::HBLANK:
+            if (m_dots >= DOTS_PER_SCANLINE - 80) { // OAM Scan takes 80 dots
+                newMode = PPU_MODE::OAM_SCAN;
+            }
+            break;
+        case PPU_MODE::VBLANK:
+            if (m_dots >= DOTS_PER_SCANLINE) {
+                m_dots -= DOTS_PER_SCANLINE;
+                currentScanline++;
+                bus.write(LY_ADDRESS, currentScanline);
+
+                if (currentScanline > 153) {
+                    newMode = PPU_MODE::OAM_SCAN;
+                    bus.write(LY_ADDRESS, 0);
+                    display.redraw(frameBuffer);
+                }
+            }
+            break;
+        case PPU_MODE::OAM_SCAN:
+            if (m_dots >= 80) {
+                newMode = PPU_MODE::PIXEL_TRANSFER;
+            }
+            break;
+        case PPU_MODE::PIXEL_TRANSFER:
+            if (m_dots >= 80 + 172) { // OAM Scan + Pixel Transfer = 80 + 172 = 252 dots
+                newMode = PPU_MODE::HBLANK;
+                drawScanline();
+            }
+            break;
+    }
+
+    if (newMode != currentMode) {
+        currentMode = newMode;
+        uint8_t stat = bus.read(STAT_ADDRESS);
+        stat &= 0xFC; // Clear mode bits
+        stat |= static_cast<uint8_t>(currentMode);
+        bus.write(STAT_ADDRESS, stat);
+
+        // Request STAT interrupts
+        if (currentMode == PPU_MODE::HBLANK && ((stat >> 3) & 1)) {
+            bus.requestInterrupt(0x02); // LCD STAT interrupt
+        } else if (currentMode == PPU_MODE::VBLANK && ((stat >> 4) & 1)) {
+            bus.requestInterrupt(0x02); // LCD STAT interrupt
+        } else if (currentMode == PPU_MODE::OAM_SCAN && ((stat >> 5) & 1)) {
+            bus.requestInterrupt(0x02); // LCD STAT interrupt
+        }
+    }
+
+    // LYC == LY interrupt
+    if (bus.read(LY_ADDRESS) == bus.read(LYC_ADDRESS)) {
+        uint8_t stat = bus.read(STAT_ADDRESS);
+        stat |= 0x04; // Set coincidence flag
+        bus.write(STAT_ADDRESS, stat);
+        if (((stat >> 6) & 1)) {
+            bus.requestInterrupt(0x02); // LCD STAT interrupt
+        }
+    } else {
+        uint8_t stat = bus.read(STAT_ADDRESS);
+        stat &= ~0x04; // Clear coincidence flag
+        bus.write(STAT_ADDRESS, stat);
+    }
+
+    if (currentScanline == 144 && currentMode == PPU_MODE::VBLANK) {
         bus.requestInterrupt(0x01); // V-blank interrupt
-    } else if (currentScanline > 153) {
-        bus.write(LY_ADDRESS, 0);
-    } else if (currentScanline < 144) {
-        drawScanline();
+    }
+
+    if (m_dots >= DOTS_PER_SCANLINE) {
+        m_dots -= DOTS_PER_SCANLINE;
+        currentScanline++;
+        bus.write(LY_ADDRESS, currentScanline);
+
+        if (currentScanline == 144) {
+            newMode = PPU_MODE::VBLANK;
+        } else if (currentScanline > 153) {
+            newMode = PPU_MODE::OAM_SCAN;
+            bus.write(LY_ADDRESS, 0);
+            display.redraw(frameBuffer);
+        } else {
+            newMode = PPU_MODE::OAM_SCAN;
+        }
+    }
+
+    if (newMode != currentMode) {
+        currentMode = newMode;
+        uint8_t stat = bus.read(STAT_ADDRESS);
+        stat &= 0xFC; // Clear mode bits
+        stat |= static_cast<uint8_t>(currentMode);
+        bus.write(STAT_ADDRESS, stat);
+
+        // Request STAT interrupts
+        if (currentMode == PPU_MODE::HBLANK && ((stat >> 3) & 1)) {
+            bus.requestInterrupt(0x02); // LCD STAT interrupt
+        } else if (currentMode == PPU_MODE::VBLANK && ((stat >> 4) & 1)) {
+            bus.requestInterrupt(0x02); // LCD STAT interrupt
+        } else if (currentMode == PPU_MODE::OAM_SCAN && ((stat >> 5) & 1)) {
+            bus.requestInterrupt(0x02); // LCD STAT interrupt
+        }
+    }
+
+    // LYC == LY interrupt
+    if (bus.read(LY_ADDRESS) == bus.read(LYC_ADDRESS)) {
+        uint8_t stat = bus.read(STAT_ADDRESS);
+        stat |= 0x04; // Set coincidence flag
+        bus.write(STAT_ADDRESS, stat);
+        if (((stat >> 6) & 1)) {
+            bus.requestInterrupt(0x02); // LCD STAT interrupt
+        }
+    } else {
+        uint8_t stat = bus.read(STAT_ADDRESS);
+        stat &= ~0x04; // Clear coincidence flag
+        bus.write(STAT_ADDRESS, stat);
     }
 }
 
@@ -67,8 +179,8 @@ void PPU::setPixel(int x, int y, uint8_t value) {
     switch (color) {
         case 0x00: rgbValue = 0; break; // black
         case 0x01: rgbValue = 96; break;
-        case 0x10: rgbValue = 192; break;
-        case 0x11: rgbValue = 255; break; //
+        case 0x02: rgbValue = 192; break;
+        case 0x03: rgbValue = 255; break; //
         default: throw std::out_of_range("Color value exceeds 2 bits - should not even be reachable");
     }
 
@@ -228,8 +340,8 @@ void PPU::drawSprites() {
                 switch (color) {
                     case 0x00: rgbValue = 0; break; // black
                     case 0x01: rgbValue = 96; break;
-                    case 0x10: rgbValue = 192; break;
-                    case 0x11: rgbValue = 255; break; //
+                    case 0x02: rgbValue = 192; break;
+                    case 0x03: rgbValue = 255; break; //
                     default: throw std::out_of_range("Color value exceeds 2 bits - should not even be reachable");
                 }
 

@@ -22,8 +22,16 @@ public:
     void redraw(const std::array<uint8_t, SCREEN_WIDTH * SCREEN_HEIGHT * 4>& buffer);
 };
 
+enum class PPU_MODE {
+    HBLANK,
+    VBLANK,
+    OAM_SCAN,
+    PIXEL_TRANSFER
+};
+
 class PPU {
 private:
+    PPU_MODE currentMode{PPU_MODE::OAM_SCAN};
     static constexpr int DOTS_PER_SCANLINE = 456;
     static constexpr int SCANLINES_PER_FRAME = 154;
 

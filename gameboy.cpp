@@ -1,10 +1,11 @@
 #include "gameboy.hpp"
 
-Gameboy::Gameboy(Cartridge& cartridge) : cartridge(cartridge), mmu(cartridge), cpu(mmu) {}
+Gameboy::Gameboy(Cartridge& cartridge) : cartridge(cartridge), mmu(cartridge), cpu(mmu), ppu(mmu) {}
 
 void Gameboy::run() {
     // Main emulation loop
     while (true) {
-        cpu.cycle();
+        int cycles = cpu.cycle();
+        ppu.tick(cycles);
     }
 }
