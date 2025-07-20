@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/gameboy.dir/src/main.cpp.o CMakeFiles/gameboy.dir/src/cpu.cpp.o CMakeFiles/gameboy.dir/src/io.cpp.o CMakeFiles/gameboy.dir/src/ppu.cpp.o CMakeFiles/gameboy.dir/src/cartridge.cpp.o CMakeFiles/gameboy.dir/src/mbc.cpp.o CMakeFiles/gameboy.dir/src/mmu.cpp.o CMakeFiles/gameboy.dir/gameboy.cpp.o -o gameboy  -L/usr/lib/x86_64-linux-gnu  -lSDL2 
