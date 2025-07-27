@@ -1,3 +1,0 @@
-/root/repos/gameboy/build/CMakeFiles/gameboy.dir
-/root/repos/gameboy/build/CMakeFiles/edit_cache.dir
-/root/repos/gameboy/build/CMakeFiles/rebuild_cache.dir
