@@ -32,8 +32,7 @@ private:
     unique_ptr<MBC> mbc;
 
     MBCType getMBCType(uint8_t code);
-
-    unique_ptr<MBC> getMBC(MBCType mbcType, const std::string& filename);
+    unique_ptr<MBC> getMBC(MBCType mbcType);
 
     size_t getRamSize(uint8_t code) {
         switch (code) {

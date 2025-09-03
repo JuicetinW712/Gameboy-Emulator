@@ -11,7 +11,7 @@ MBCType Cartridge::getMBCType(uint8_t code) {
     }
 }
 
-unique_ptr<MBC> Cartridge::getMBC(MBCType mbcType, const std::string& filename) {
+unique_ptr<MBC> Cartridge::getMBC(MBCType mbcType) {
     switch (mbcType) {
         case MBCType::ROM_ONLY: return make_unique<ROMOnly>(rom);
         case MBCType::MBC1: return make_unique<MBC1>(rom, ram);
