@@ -15,9 +15,7 @@ enum class MBCType {
     ROM_ONLY,
     MBC1,
     MBC1_WITH_RAM,
-    MBC1_WITH_RAM_AND_BATTERY,
     MBC2,
-    MBC2_BATTERY,
     UNSUPPORTED
 };
 
@@ -33,29 +31,9 @@ private:
     MBCType mbcType;
     unique_ptr<MBC> mbc;
 
-    MBCType getMBCType(uint8_t code) {
-        switch (code) {
-            case 0x0: return MBCType::ROM_ONLY;
-            case 0x1: return MBCType::MBC1;
-            case 0x2: return MBCType::MBC1_WITH_RAM;
-            case 0x3: return MBCType::MBC1_WITH_RAM_AND_BATTERY;
-            case 0x5: return MBCType::MBC2;
-            case 0x6: return MBCType::MBC2_BATTERY;
-            default: return MBCType::UNSUPPORTED;
-        }
-    }
+    MBCType getMBCType(uint8_t code);
 
-    unique_ptr<MBC> getMBC(MBCType mbcType, const std::string& filename) {
-        switch (mbcType) {
-            case MBCType::ROM_ONLY: return make_unique<ROMOnly>(rom);
-            case MBCType::MBC1: return make_unique<MBC1>(rom, ram);
-            case MBCType::MBC1_WITH_RAM: return make_unique<MBC1>(rom, ram);
-            case MBCType::MBC1_WITH_RAM_AND_BATTERY: return make_unique<MBC1Battery>(rom, ram, filename);
-            case MBCType::MBC2: return make_unique<MBC2>(rom, ram);
-            case MBCType::MBC2_BATTERY: return make_unique<MBC2Battery>(rom, ram, filename);
-            default: return make_unique<ROMOnly>(rom); // Fallback for unsupported MBCs
-        }
-    }
+    unique_ptr<MBC> getMBC(MBCType mbcType, const std::string& filename);
 
     size_t getRamSize(uint8_t code) {
         switch (code) {
@@ -74,9 +52,7 @@ private:
             case MBCType::ROM_ONLY: return "ROM ONLY";
             case MBCType::MBC1: return "MBC1";
             case MBCType::MBC1_WITH_RAM: return "MBC1_WITH_RAM";
-            case MBCType::MBC1_WITH_RAM_AND_BATTERY: return "MBC1_WITH_RAM_AND_BATTERY";
             case MBCType::MBC2: return "MBC2";
-            case MBCType::MBC2_BATTERY: return "MBC2_BATTERY";
             default: return "UNSUPPORTED";
         }
     }

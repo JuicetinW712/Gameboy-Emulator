@@ -154,15 +154,6 @@ public:
     }
 };
 
-class MBC1Battery: public MBC1 {
-private:
-    string filename;
-
-public:
-    MBC1Battery(vector<uint8_t>& romData, vector<uint8_t>& ramData, string filename);
-    ~MBC1Battery() override;
-};
-
 class MBC2: public MBC {
 protected:
     // Bank sizes
@@ -236,13 +227,4 @@ public:
             return 0xFF;
         }
     }
-};
-
-class MBC2Battery: public MBC2 {
-private:
-    string filename;
-
-public:
-    MBC2Battery(vector<uint8_t>& romData, vector<uint8_t>& ramData, string filename);
-    ~MBC2Battery() override;
 };
