@@ -1,28 +1,18 @@
 #pragma once
 
-#include <cstring>
-
 #include "cpu.hpp"
-#include "ppu.hpp"
+#include "mmu.hpp"
 #include "cartridge.hpp"
+#include "ppu.hpp"
 
 class Gameboy {
 private:
+    Cartridge& cartridge;
     MMU mmu;
     CPU cpu;
     PPU ppu;
 
 public:
-    Gameboy(Cartridge& cartridge):
-        mmu(cartridge),
-        cpu(mmu),
-        ppu(mmu) {}
-
-    void run() {
-        while (true) {
-            int cycles = cpu.cycle();
-            ppu.tick(cycles);
-            mmu.tick(cycles);
-        }
-    }
+    explicit Gameboy(Cartridge& cartridge);
+    void run();
 };

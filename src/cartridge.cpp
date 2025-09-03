@@ -21,5 +21,25 @@ unique_ptr<MBC> Cartridge::getMBC(MBCType mbcType) {
     }
 }
 
+size_t Cartridge::getRamSize(uint8_t code) {
+    switch (code) {
+        case 0x0: return 0;
+        case 0x2: return KILOBYTE_SIZE;
+        case 0x3: return 4 * KILOBYTE_SIZE;
+        case 0x4: return 16 * KILOBYTE_SIZE;
+        case 0x5: return 8 * KILOBYTE_SIZE;
+        case 0x6: return 512; // MBC2 has 512 Bytes of RAM
+        default: assert(false && "Unknown RAM Code");
+    }
+}
 
+std::string Cartridge::getMBCString(MBCType mbcType) {
+    switch (mbcType) {
+        case MBCType::ROM_ONLY: return "ROM ONLY";
+        case MBCType::MBC1: return "MBC1";
+        case MBCType::MBC1_WITH_RAM: return "MBC1_WITH_RAM";
+        case MBCType::MBC2: return "MBC2";
+        default: return "UNSUPPORTED";
+    }
+}
 

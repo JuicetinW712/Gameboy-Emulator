@@ -14,6 +14,6 @@ add_executable(gameboy
         src/cartridge.cpp
         src/mbc.cpp
         src/mmu.cpp
-        gameboy.cpp)
+        src/gameboy.cpp)
 
 target_link_libraries(gameboy ${SDL2_LIBRARIES})
