@@ -39,5 +39,6 @@ void Gameboy::run() {
         }
         int cycles = cpu.cycle();
         ppu.tick(cycles);
+        mmu.tick(cycles);
     }
 }
