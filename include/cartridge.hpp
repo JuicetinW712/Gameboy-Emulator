@@ -68,7 +68,7 @@ public:
 
         // Initialize MBC
         mbcType = getMBCType(rom.at(0x0147));
-        mbc = getMBC(mbcType, filename);
+        mbc = getMBC(mbcType);
     }
 
     Cartridge(Cartridge&& other) noexcept :
@@ -79,7 +79,7 @@ public:
         ramSize(other.ramSize),
         filename(std::move(other.filename)),
         mbcType(other.mbcType) {
-        mbc = getMBC(other.mbcType, filename);
+        mbc = getMBC(other.mbcType);
     }
 
     Cartridge& operator=(Cartridge&& other) noexcept {
@@ -91,7 +91,7 @@ public:
             ramSize = other.ramSize;
             filename = std::move(other.filename);
             mbcType = other.mbcType;
-            mbc = getMBC(other.mbcType, filename);
+            mbc = getMBC(other.mbcType);
         }
         return *this;
     }
