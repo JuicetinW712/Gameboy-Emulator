@@ -59,3 +59,16 @@ The emulator maps standard keyboard keys to Gameboy controls:
 | **Start**       | `Enter`      |
 
 ## 📸 Screenshots (TODO)
+
+
+./gameboy "../tests/01-special.gb"
+./gameboy "../tests/02-interrupts.gb"
+./gameboy "../tests/03-op sp,hl.gb"
+./gameboy "../tests/04-op r,imm.gb"
+./gameboy "../tests/05-op rp.gb"
+./gameboy "../tests/06-ld r,r.gb"
+./gameboy "../tests/07-jr,jp,call,ret,rst.gb"
+./gameboy "../tests/08-misc instrs.gb"
+./gameboy "../tests/09-op r,r.gb"
+./gameboy "../tests/10-bit ops.gb"
+./gameboy "../tests/11-op a,(hl).gb"

@@ -705,32 +705,28 @@ void CPU::RRA() {
 void CPU::DAA() {
     uint8_t a = getR8Value(R8::A);
     uint8_t correction = 0;
-    bool setCarry = false;
+    bool c = getCarryFlag();
 
     if (getSubtractionFlag()) {
         if (getHalfCarryFlag()) correction |= 0x06;
-        if (getCarryFlag()) {
-            correction |= 0x60;
-            setCarry = true;
-        }
+        if (c) correction |= 0x60;
         a = static_cast<uint8_t>(a - correction);
     } else {
         if (getHalfCarryFlag() || (a & 0x0F) > 0x09) correction |= 0x06;
-        if (getCarryFlag() || a > 0x99) {
+        if (c || a > 0x99) {
             correction |= 0x60;
-            setCarry = true;
+            c = true;
         }
         a = static_cast<uint8_t>(a + correction);
     }
 
     setZeroFlag(a == 0);
     setHalfCarryFlag(false);
-    if (setCarry) {
-        setCarryFlag(true);
-    }
+    setCarryFlag(c); 
 
     setR8Value(R8::A, a);
 }
+
 
 void CPU::CPL() {
     uint8_t value = getR8Value(R8::A);
@@ -946,8 +942,10 @@ void CPU::ADD_SP_E8(int8_t value) {
 
     setZeroFlag(false);
     setSubtractionFlag(false);
-    setHalfCarryFlag(((originalValue & 0xF) + (value & 0xF)) > 0xF);
-    setCarryFlag(((originalValue & 0xFF) + (value & 0xFF)) > 0xFF);
+
+    uint16_t uValue = static_cast<uint8_t>(value);
+    setHalfCarryFlag(((originalValue & 0xF) + (uValue & 0xF)) > 0xF);
+    setCarryFlag(((originalValue & 0xFF) + (uValue & 0xFF)) > 0xFF);
 }
 void CPU::LD_HL_SP_PLUS_E8(int8_t value) {
     uint16_t sum = static_cast<uint16_t>(SP + value);
